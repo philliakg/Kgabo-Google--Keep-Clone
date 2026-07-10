@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A simplified Google Keep clone built with HTML, CSS and vanilla JavaScript." />
+  <title>Google Keep Clone</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💡</text></svg>" />
+</head>
+<body>
+
+  <!--  Header  -->
+  <header class="app-header" id="app-header">
+    <div class="header-left">
+      <button class="icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar" data-tooltip="Main menu">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg>
+      </button>
+      <a class="logo" href="#notes">
+        <span class="logo-icon">💡</span>
+        <span class="logo-text">Keep Clone</span>
+      </a>
+    </div>
+
+    <div class="search-bar" role="search">
+      <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+      <input type="search" id="search-input" placeholder="Search notes" aria-label="Search notes" autocomplete="off" />
+      <button class="icon-btn search-clear hidden" id="search-clear" aria-label="Clear search" data-tooltip="Clear search">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+
+    <div class="header-right">
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode" data-tooltip="Toggle theme">
+        <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="app-body">
+
+    <!--  Sidebar  -->
+    <nav class="sidebar" id="sidebar" aria-label="Main navigation">
+      <button class="nav-item active" data-view="notes" data-tooltip="Notes">
+        <svg viewBox="0 0 24 24"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19a7 7 0 0 0-4 12.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26A7 7 0 0 0 12 2z"/></svg>
+        <span class="nav-label">Notes</span>
+      </button>
+      <button class="nav-item" data-view="archive" data-tooltip="Archive">
+        <svg viewBox="0 0 24 24"><path d="M20.54 5.23 19.15 3.55A1.99 1.99 0 0 0 17.6 3H6.4c-.62 0-1.17.28-1.55.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5 6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/></svg>
+        <span class="nav-label">Archive</span>
+      </button>
+    </nav>
+
+    <!--  Main content  -->
+    <main class="main-content" id="main-content">
+
+      <!-- Note composer: body visible by default; title, colors, and actions appear on focus -->
+      <section class="composer-wrapper" id="composer-wrapper" aria-label="Create a note">
+        <form class="composer" id="composer" autocomplete="off">
+          <input
+            type="text"
+            class="composer-title hidden"
+            id="composer-title"
+            placeholder="Title"
+            maxlength="120"
+            aria-label="Note title"
+          />
+          <textarea
+            class="composer-body"
+            id="composer-body"
+            placeholder="Take a note…"
+            rows="1"
+            aria-label="Note text"
+          ></textarea>
+          <div class="composer-actions hidden" id="composer-actions">
+            <div class="color-picker" id="composer-colors" role="radiogroup" aria-label="Note color"></div>
+            <button type="submit" class="text-btn" id="composer-save" data-tooltip="Save note">Add note</button>
+            <button type="button" class="text-btn" id="composer-close" data-tooltip="Discard">Close</button>
+            <!-- Close discards in-progress text without creating a note -->
+          </div>
+        </form>
+      </section>
+
+      <!-- Section heading (Notes / Archive / Search results) -->
+      <h2 class="view-title" id="view-title">Notes</h2>
+
+      <!-- Pinned notes -->
+      <section id="pinned-section" class="hidden" aria-label="Pinned notes">
+        <h3 class="section-label">Pinned</h3>
+        <div class="notes-grid" id="pinned-grid"></div>
+      </section>
+
+      <!-- Regular / archived notes (grid contents depend on the active sidebar view) -->
+      <section aria-label="Note cards">
+        <h3 class="section-label hidden" id="others-label">Others</h3>
+        <div class="notes-grid" id="notes-grid"></div>
+      </section>
+
+      <!-- Empty state shown when a view has no notes -->
+      <div class="empty-state hidden" id="empty-state">
+        <span class="empty-icon" id="empty-icon">💡</span>
+        <p class="empty-text" id="empty-text">Notes you add appear here</p>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Edit modal: opened by clicking a note card; dismiss saves title/body changes -->
+  <div class="modal-overlay hidden" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+    <div class="modal">
+      <input type="text" class="composer-title" id="edit-title" placeholder="Title" maxlength="120" aria-label="Edit note title" />
+      <textarea class="composer-body" id="edit-body" placeholder="Take a note…" rows="4" aria-label="Edit note text"></textarea>
+      <div class="modal-footer">
+        <div class="color-picker" id="edit-colors" role="radiogroup" aria-label="Note color"></div>
+        <span class="modal-timestamp" id="edit-timestamp"></span>
+        <button type="button" class="text-btn" id="edit-save" data-tooltip="Save changes">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast snackbar for action feedback; Undo is shown when an onUndo callback is provided -->
+  <div class="toast hidden" id="toast" role="status" aria-live="polite">
+    <span id="toast-message"></span>
+    <button class="text-btn toast-action" id="toast-action">Undo</button>
+  </div>
+
+  <!-- Cloned by renderCard() in app.js for each note in the grids -->
+  <template id="note-template">
+    <article class="note-card" tabindex="0">
+      <button class="icon-btn note-pin" data-action="pin" aria-label="Pin note" data-tooltip="Pin note">
+        <svg viewBox="0 0 24 24"><path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg>
+      </button>
+      <h3 class="note-title"></h3>
+      <p class="note-body"></p>
+      <footer class="note-actions">
+        <button class="icon-btn" data-action="color" aria-label="Change color" data-tooltip="Change color">
+          <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18 1.5 1.5 0 0 0 1.11-2.51c-.26-.28-.4-.64-.4-1a1.5 1.5 0 0 1 1.5-1.5H16a5 5 0 0 0 5-5c0-4.42-4.03-8-9-8zm-5.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+        </button>
+        <button class="icon-btn" data-action="archive" aria-label="Archive note" data-tooltip="Archive">
+          <svg viewBox="0 0 24 24"><path d="M20.54 5.23 19.15 3.55A1.99 1.99 0 0 0 17.6 3H6.4c-.62 0-1.17.28-1.55.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5 6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/></svg>
+        </button>
+        <button class="icon-btn" data-action="delete" aria-label="Delete note" data-tooltip="Delete">
+          <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        </button>
+      </footer>
+      <div class="note-color-menu hidden"></div>
+    </article>
+  </template>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
